@@ -1,0 +1,484 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>창업돋보기 회사 배정 - 일괄입력 중복방지</title>
+  <style>
+    :root {
+      --main: #ffb340;
+      --main-dark: #f28c00;
+      --bg: #fff8eb;
+      --card: #ffffff;
+      --text: #242424;
+      --muted: #777;
+      --line: #f1d29b;
+      --green: #36a269;
+    }
+
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: "Pretendard", "Noto Sans KR", Arial, sans-serif;
+      background: linear-gradient(180deg, #fff4d7 0%, #fffaf0 100%);
+      color: var(--text);
+      min-height: 100vh;
+      padding: 28px;
+    }
+
+    .wrap { max-width: 1120px; margin: 0 auto; }
+    header { text-align: center; margin-bottom: 22px; }
+    h1 { margin: 0 0 8px; font-size: 34px; }
+    .sub { color: #6b4b1f; font-size: 17px; }
+
+    .panel {
+      background: var(--card);
+      border: 2px solid var(--line);
+      border-radius: 22px;
+      padding: 20px;
+      box-shadow: 0 10px 24px rgba(122, 82, 21, 0.12);
+      margin-bottom: 18px;
+    }
+
+    .topControls {
+      display: grid;
+      grid-template-columns: 1fr auto auto;
+      gap: 10px;
+      align-items: center;
+      margin-bottom: 16px;
+    }
+
+    input, select {
+      width: 100%;
+      padding: 13px 14px;
+      border: 2px solid #edd2a6;
+      border-radius: 14px;
+      font-size: 16px;
+      outline: none;
+      background: #fff;
+    }
+    input:focus, select:focus { border-color: var(--main); }
+
+    button {
+      border: 0;
+      border-radius: 14px;
+      padding: 14px 18px;
+      font-weight: 800;
+      font-size: 16px;
+      cursor: pointer;
+      transition: transform 0.08s ease, opacity 0.15s ease;
+      white-space: nowrap;
+    }
+    button:active { transform: scale(0.98); }
+    .primary { background: var(--main); color: #382200; }
+    .dark { background: #3a2a17; color: white; }
+    .ghost { background: #f6ead6; color: #4f3517; }
+    .danger { background: #ffe0df; color: #9b1c16; }
+    .small { padding: 10px 12px; font-size: 14px; border-radius: 12px; }
+
+    .notice {
+      font-size: 14px;
+      color: #816039;
+      line-height: 1.6;
+      margin-bottom: 14px;
+    }
+
+    .classGrid {
+      display: grid;
+      grid-template-columns: 1.2fr 0.8fr auto;
+      gap: 10px;
+      align-items: center;
+      margin-bottom: 10px;
+      padding: 12px;
+      background: #fffaf1;
+      border: 1px solid #f3dfba;
+      border-radius: 16px;
+    }
+    .classGrid.header {
+      background: #fff0ca;
+      font-weight: 900;
+      color: #4a2e07;
+      border: 0;
+      padding: 10px 12px;
+    }
+
+    .actionArea {
+      text-align: center;
+      margin-top: 20px;
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .ladderBox {
+      display: none;
+      margin-top: 20px;
+      padding: 18px;
+      background: #fffdfa;
+      border: 2px solid #f0d5a6;
+      border-radius: 20px;
+      overflow-x: auto;
+    }
+    .ladderBox.show { display: block; }
+    .ladderTitle {
+      text-align: center;
+      font-weight: 900;
+      color: #5f3d12;
+      margin-bottom: 12px;
+      font-size: 20px;
+    }
+    .ladderSvg {
+      width: 100%;
+      min-width: 640px;
+      height: 360px;
+      display: block;
+      background: #fffaf1;
+      border-radius: 16px;
+    }
+    .ladderLine { stroke: #d7a95a; stroke-width: 5; stroke-linecap: round; }
+    .ladderPath {
+      stroke: #ff7a00;
+      stroke-width: 8;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      fill: none;
+      stroke-dasharray: 1200;
+      stroke-dashoffset: 1200;
+      animation: drawPath 1.8s ease forwards;
+    }
+    .ladderLabel { font-size: 17px; font-weight: 900; fill: #4a2e07; text-anchor: middle; }
+    .ladderBottom { font-size: 14px; font-weight: 800; fill: #61451f; text-anchor: middle; }
+    @keyframes drawPath { to { stroke-dashoffset: 0; } }
+
+    .resultBox {
+      padding: 20px 16px;
+      border-radius: 20px;
+      background: #fff7e5;
+      border: 2px dashed #e3b76b;
+      margin-top: 18px;
+      display: none;
+    }
+    .resultBox.show { display: block; }
+    .resultTitle {
+      text-align: center;
+      color: #6b4b1f;
+      font-weight: 900;
+      font-size: 22px;
+      margin-bottom: 12px;
+    }
+
+    table { width: 100%; border-collapse: collapse; overflow: hidden; border-radius: 14px; }
+    th, td { padding: 13px; border-bottom: 1px solid #f0dfc3; text-align: center; }
+    th { background: #fff0ca; }
+    td:first-child { font-weight: 800; }
+    .empty { color: var(--muted); padding: 20px; text-align: center; }
+
+    @media (max-width: 720px) {
+      body { padding: 16px; }
+      h1 { font-size: 26px; }
+      .topControls { grid-template-columns: 1fr; }
+      .classGrid { grid-template-columns: 1fr; }
+      .classGrid.header { display: none; }
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <h1>🥭 창업돋보기 회사 배정</h1>
+      <div class="sub">반별 선택 번호를 먼저 한 번에 입력하고, 결과 공개 시 사다리타기를 보여줍니다.</div>
+    </header>
+
+    <section class="panel">
+      <div class="notice">
+        ※ 반 이름과 대표가 선택한 번호를 모두 입력한 뒤 <b>결과 공개</b>를 누르세요.<br />
+        ※ 한 번 선택된 번호는 다른 반에서 중복 선택할 수 없도록 막아두었습니다.<br />
+        ※ 입력 단계에서는 사다리가 보이지 않고, 결과 공개 후 반별로 사다리타기 과정이 순서대로 나옵니다.<br />
+        ※ 회사 배정은 페이지를 열 때 내부적으로 무작위 섞이며, <b>다시 섞기</b>를 누르면 새로 배정됩니다.
+      </div>
+
+      <div class="topControls">
+        <input id="newClassName" placeholder="추가할 반 이름 예: 5반 / E반" />
+        <button class="primary" onclick="addClass()">반 추가</button>
+        <button class="ghost" onclick="shuffleAll()">다시 섞기</button>
+      </div>
+
+      <div class="classGrid header">
+        <div>반 이름</div>
+        <div>선택 번호</div>
+        <div>관리</div>
+      </div>
+      <div id="classRows"></div>
+
+      <div class="actionArea">
+        <button class="dark" onclick="revealAll()">결과 공개</button>
+        <button class="danger" onclick="clearResults()">결과 숨기기</button>
+      </div>
+
+      <div class="ladderBox" id="ladderBox">
+        <div class="ladderTitle" id="ladderTitle">사다리타기 진행 중...</div>
+        <svg class="ladderSvg" id="ladderSvg" viewBox="0 0 900 360" aria-label="사다리타기 결과 공개 화면"></svg>
+      </div>
+
+      <div class="resultBox" id="resultBox">
+        <div class="resultTitle">배정 결과</div>
+        <div id="resultTable"></div>
+      </div>
+    </section>
+  </div>
+
+  <script>
+    const companies = [
+      { company: "식품유통회사", item: "구디백 제작" },
+      { company: "음료제조회사", item: "카페 음료 제조" },
+      { company: "굿즈제조회사", item: "키캡 키링 제작" },
+      { company: "문구제조회사", item: "볼펜 꾸미기" },
+      { company: "공예회사", item: "워리스톤 제작" }
+    ];
+
+    const ladderRows = [
+      { y: 95, from: 1, to: 2 },
+      { y: 130, from: 3, to: 4 },
+      { y: 165, from: 2, to: 3 },
+      { y: 200, from: 4, to: 5 },
+      { y: 235, from: 1, to: 2 },
+      { y: 270, from: 3, to: 4 }
+    ];
+
+    let classes = JSON.parse(localStorage.getItem("mangoBizBatchClassesNoDupFinal") || "null") || [
+      { id: crypto.randomUUID(), name: "1반", number: "", map: shuffle(companies) },
+      { id: crypto.randomUUID(), name: "2반", number: "", map: shuffle(companies) },
+      { id: crypto.randomUUID(), name: "3반", number: "", map: shuffle(companies) },
+      { id: crypto.randomUUID(), name: "4반", number: "", map: shuffle(companies) }
+    ];
+
+    function shuffle(array) {
+      const copy = [...array];
+      for (let i = copy.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [copy[i], copy[j]] = [copy[j], copy[i]];
+      }
+      return copy;
+    }
+
+    function saveClasses() {
+      localStorage.setItem("mangoBizBatchClassesNoDupFinal", JSON.stringify(classes));
+    }
+
+    function renderRows() {
+      const box = document.getElementById("classRows");
+      box.innerHTML = classes.map((row, idx) => {
+        const selectedByOthers = classes
+          .filter(other => other.id !== row.id && other.number)
+          .map(other => String(other.number));
+
+        return `
+          <div class="classGrid">
+            <input value="${escapeHtml(row.name)}" onchange="updateName('${row.id}', this.value)" placeholder="반 이름" />
+            <select onchange="updateNumber('${row.id}', this.value)">
+              <option value="">번호 선택</option>
+              ${[1,2,3,4,5].map(n => {
+                const isSelected = String(row.number) === String(n);
+                const isUsed = selectedByOthers.includes(String(n));
+                return `<option value="${n}" ${isSelected ? "selected" : ""} ${isUsed ? "disabled" : ""}>${n}번${isUsed ? " - 선택됨" : ""}</option>`;
+              }).join("")}
+            </select>
+            <button class="danger small" onclick="removeClass('${row.id}')">삭제</button>
+          </div>
+        `;
+      }).join("");
+    }
+
+    function updateName(id, value) {
+      classes = classes.map(row => row.id === id ? { ...row, name: value.trim() } : row);
+      saveClasses();
+    }
+
+    function updateNumber(id, value) {
+      if (value && classes.some(row => row.id !== id && String(row.number) === String(value))) {
+        alert(`${value}번은 이미 다른 반에서 선택했습니다. 다른 번호를 선택해주세요.`);
+        renderRows();
+        return;
+      }
+      classes = classes.map(row => row.id === id ? { ...row, number: value } : row);
+      clearResults();
+      saveClasses();
+      renderRows();
+    }
+
+    function addClass() {
+      const input = document.getElementById("newClassName");
+      const name = input.value.trim();
+      classes.push({ id: crypto.randomUUID(), name: name || `${classes.length + 1}반`, number: "", map: shuffle(companies) });
+      input.value = "";
+      clearResults();
+      saveClasses();
+      renderRows();
+    }
+
+    function removeClass(id) {
+      if (!confirm("이 반을 삭제할까요?")) return;
+      classes = classes.filter(row => row.id !== id);
+      clearResults();
+      saveClasses();
+      renderRows();
+    }
+
+    function shuffleAll() {
+      if (!confirm("회사 배정을 다시 섞을까요? 기존 결과도 달라집니다.")) return;
+      classes = classes.map(row => ({ ...row, map: shuffle(companies) }));
+      clearResults();
+      saveClasses();
+      renderRows();
+    }
+
+    async function revealAll() {
+      const valid = classes.filter(row => row.name.trim() && row.number);
+      if (valid.length === 0) {
+        alert("반 이름과 선택 번호를 입력해주세요.");
+        return;
+      }
+      if (valid.length !== classes.length) {
+        alert("모든 반의 이름과 선택 번호를 입력해주세요.");
+        return;
+      }
+      const numbers = valid.map(row => String(row.number));
+      if (new Set(numbers).size !== numbers.length) {
+        alert("중복 선택된 번호가 있습니다. 반별로 서로 다른 번호를 선택해주세요.");
+        return;
+      }
+
+      document.getElementById("resultBox").classList.remove("show");
+      document.getElementById("resultTable").innerHTML = "";
+      document.getElementById("ladderBox").classList.add("show");
+      document.getElementById("ladderBox").scrollIntoView({ behavior: "smooth", block: "center" });
+
+      const results = [];
+      for (const row of valid) {
+        const number = Number(row.number);
+        const result = row.map[number - 1];
+        showLadder(row, number, result);
+        await wait(2300);
+        results.push({ className: row.name, number, company: result.company, item: result.item });
+        renderResultTable(results);
+      }
+
+      document.getElementById("ladderTitle").textContent = "사다리타기 완료!";
+      document.getElementById("resultBox").classList.add("show");
+      document.getElementById("resultBox").scrollIntoView({ behavior: "smooth", block: "center" });
+    }
+
+    function wait(ms) {
+      return new Promise(resolve => setTimeout(resolve, ms));
+    }
+
+    function renderResultTable(results) {
+      document.getElementById("resultTable").innerHTML = `
+        <table>
+          <thead>
+            <tr>
+              <th>반</th>
+              <th>선택 번호</th>
+              <th>배정 회사</th>
+              <th>상품</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${results.map(r => `
+              <tr>
+                <td>${escapeHtml(r.className)}</td>
+                <td>${r.number}번</td>
+                <td>${r.company}</td>
+                <td>${r.item}</td>
+              </tr>
+            `).join("")}
+          </tbody>
+        </table>
+      `;
+      document.getElementById("resultBox").classList.add("show");
+    }
+
+    function showLadder(row, startNumber, result) {
+      const svg = document.getElementById("ladderSvg");
+      const box = document.getElementById("ladderBox");
+      document.getElementById("ladderTitle").textContent = `${row.name} ${startNumber}번 사다리타기 진행 중...`;
+      svg.innerHTML = "";
+      box.classList.add("show");
+
+      const xs = [120, 285, 450, 615, 780];
+      const topY = 55;
+      const bottomY = 305;
+      const ns = "http://www.w3.org/2000/svg";
+
+      function line(x1, y1, x2, y2, cls) {
+        const el = document.createElementNS(ns, "line");
+        el.setAttribute("x1", x1); el.setAttribute("y1", y1);
+        el.setAttribute("x2", x2); el.setAttribute("y2", y2);
+        el.setAttribute("class", cls);
+        svg.appendChild(el);
+      }
+
+      function text(x, y, value, cls) {
+        const el = document.createElementNS(ns, "text");
+        el.setAttribute("x", x); el.setAttribute("y", y);
+        el.setAttribute("class", cls);
+        el.textContent = value;
+        svg.appendChild(el);
+      }
+
+      xs.forEach((x, idx) => {
+        line(x, topY, x, bottomY, "ladderLine");
+        text(x, 32, `${idx + 1}번`, "ladderLabel");
+        const bottom = row.map[idx];
+        text(x, 334, bottom.company.replace("회사", ""), "ladderBottom");
+      });
+
+      ladderRows.forEach(r => {
+        line(xs[r.from - 1], r.y, xs[r.to - 1], r.y, "ladderLine");
+      });
+
+      let col = startNumber;
+      let d = `M ${xs[col - 1]} ${topY}`;
+      ladderRows.forEach(r => {
+        d += ` L ${xs[col - 1]} ${r.y}`;
+        if (r.from === col) {
+          d += ` L ${xs[r.to - 1]} ${r.y}`;
+          col = r.to;
+        } else if (r.to === col) {
+          d += ` L ${xs[r.from - 1]} ${r.y}`;
+          col = r.from;
+        }
+      });
+      d += ` L ${xs[col - 1]} ${bottomY}`;
+
+      const path = document.createElementNS(ns, "path");
+      path.setAttribute("d", d);
+      path.setAttribute("class", "ladderPath");
+      svg.appendChild(path);
+
+      setTimeout(() => {
+        document.getElementById("ladderTitle").textContent = `${row.name} ${startNumber}번 결과: ${result.company}`;
+      }, 1800);
+    }
+
+    function clearResults() {
+      document.getElementById("resultBox").classList.remove("show");
+      document.getElementById("ladderBox").classList.remove("show");
+      document.getElementById("ladderSvg").innerHTML = "";
+      document.getElementById("resultTable").innerHTML = "";
+    }
+
+    function escapeHtml(text) {
+      return String(text)
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
+    }
+
+    renderRows();
+  </script>
+</body>
+</html>
